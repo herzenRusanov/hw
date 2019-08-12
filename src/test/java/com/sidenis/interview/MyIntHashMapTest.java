@@ -3,7 +3,9 @@ package com.sidenis.interview;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,19 +17,38 @@ class MyIntHashMapTest {
   private MyIntHashMap map;
 
   private static Object[] provider() {
-    return new Object[]{new int[]{Integer.MAX_VALUE, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5,
-        Integer.MIN_VALUE}};
+    int[] arr = new int[100_000];
+    Random random = new Random();
+    for (int i = 0; i < arr.length; i++) {
+      arr[i] = random.nextInt();
+    }
+
+    return new Object[]{arr};
+  }
+
+  private static Object[] uniqueProvider() {
+    Set<Integer> set = new HashSet<>();
+    Random random = new Random();
+    for (int i = 0; i < 100_000; i++) {
+      set.add(random.nextInt());
+    }
+    int[] arr = new int[set.size()];
+    int j = 0;
+    for (Integer i : set) {
+      arr[j++] = i;
+    }
+
+    return new Object[]{arr};
   }
 
   @BeforeEach
   void init() {
-//    сделал capacity меньше, чтобы увеличить количество коллизий
     map = new MyIntHashMap(2);
   }
 
   @ParameterizedTest
   @DisplayName("Size")
-  @MethodSource("provider")
+  @MethodSource("uniqueProvider")
   void testSize(int[] ints) {
     fillMap(ints);
 
@@ -51,7 +72,8 @@ class MyIntHashMapTest {
     fillMap(ints);
 
     for (int i : ints) {
-      assertEquals(i, map.get(i));
+      int actual = map.get(i);
+      assertEquals(i, actual, () -> "Should return " + i + " but return " + actual);
     }
   }
 
@@ -69,7 +91,8 @@ class MyIntHashMapTest {
 
     for (int i : ints) {
       map.remove(i);
-      assertEquals(0, map.get(i));
+      int actual = map.get(i);
+      assertEquals(0, actual, () -> "Should return 0 but return " + actual);
     }
   }
 
@@ -79,7 +102,8 @@ class MyIntHashMapTest {
     int i = new Random().nextInt();
 
     map.remove(i);
-    assertEquals(0, map.get(i));
+    int actual = map.get(i);
+    assertEquals(0, actual, () -> "Should return 0 but return " + actual);
   }
 
   private void fillMap(int[] ints) {

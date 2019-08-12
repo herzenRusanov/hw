@@ -3,9 +3,8 @@ package com.sidenis.interview;
 public class MyIntHashMap {
 
   private final static int DEFAULT_CAPACITY = 16;
-
-  private int capacity, size;
-
+  private final double loadFactor = 0.75f;
+  private int size, threshold;
   private Node[] nodes;
 
   public MyIntHashMap() {
@@ -17,7 +16,7 @@ public class MyIntHashMap {
       throw new IllegalArgumentException("Capacity can't be less then 1");
     }
 
-    this.capacity = capacity;
+    threshold = (int) (capacity * loadFactor);
     nodes = new Node[capacity];
   }
 
@@ -50,6 +49,27 @@ public class MyIntHashMap {
     }
 
 //    тут можно сделать ресайз
+    if (size >= threshold) {
+      resize(nodes.length * 2);
+    }
+  }
+
+  private void resize(int capacity) {
+    Node[] newNodes = new Node[capacity];
+    transfer(newNodes);
+    nodes = newNodes;
+    threshold = (int) (capacity * loadFactor);
+  }
+
+  private void transfer(Node[] newNodes) {
+    for (Node node : nodes) {
+      Node current = node;
+      while (current != null) {
+        newNodes[Math.abs(current.key) % newNodes.length] = node;
+
+        current = current.next;
+      }
+    }
   }
 
   //  По скольку тут примитивы, то если ничего не находим возвращаю 0. В целом можно изменить
@@ -59,7 +79,6 @@ public class MyIntHashMap {
     if (size == 0) {
       return 0;
     }
-
 
     Node node = nodes[hash(key)];
 
